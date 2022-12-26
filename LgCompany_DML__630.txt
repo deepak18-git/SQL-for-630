@@ -1,0 +1,179 @@
+-- Question 27
+select * from lgdepartment order by dept_name
+-- question 28
+select prod_sku, prod_descript, prod_type, prod_category, prod_price from lgproduct where prod_base='Water' and prod_category='sealer'
+-- question 29
+select emp_fname, emp_lname, emp_email from lgemployee where emp_hiredate>='2005/01/01' and emp_hiredate<='2014/12/31' order by emp_lname, 
+emp_fname;
+-- question 30
+select emp_fname, emp_lname, emp_phone, emp_title, dept_num from lgemployee where dept_num=300 or emp_title='CLERK I' order by emp_lname, 
+emp_fname;
+-- question 31
+select lgemployee.emp_num, emp_fname, emp_lname, sal_from, sal_end, sal_amount from lgemployee, lgsalary_history where lgemployee.emp_num=
+lgsalary_history.emp_num and lgemployee.emp_num in (83731,83745,84039) order by emp_num, sal_from
+-- question 32
+select DISTINCT cust_fname, cust_lname, cust_street, cust_city, cust_state, cust_zip from lgcustomer 
+inner join lginvoice invoice on lgcustomer.cust_code=invoice.cust_code
+inner join lgline on invoice.inv_num=lgline.inv_num 
+inner join lgproduct on lgproduct.prod_sku=lgline.prod_sku
+inner join lgbrand on lgbrand.brand_id=lgproduct.brand_id
+and inv_date between'2015-07-15' and '2015-07-31' and brand_name='FORESTERS BEST' and prod_category='top coat' order by cust_state, 
+cust_lname, cust_fname;
+-- question 33
+--- doubt
+select lgemployee.emp_num, emp_lname, emp_email, emp_title, dept_name from lgemployee 
+inner join lgdepartment on lgemployee.dept_num=lgdepartment.dept_num where emp_title like'%ASSOCIATE' order by dept_name, emp_title;
+-- question 34
+select brand_name, count(lgbrand.brand_id) as NUMPRODUCTS from lgbrand inner join lgproduct on lgbrand.brand_id=lgproduct.brand_id group by 
+lgbrand.brand_name order by brand_name;
+-- question 35
+select prod_category, count(prod_base) as NUMPRODUCTS from lgproduct where prod_base='water' group by prod_category;
+-- question 36
+select prod_base, prod_type, count(prod_type) as NUMOFPRODUCTS from lgproduct group by prod_base, prod_type order by prod_base;
+-- question 37
+select lgbrand.brand_id, sum(lgproduct.prod_qoh) as TOTALINVENTORY from lgbrand 
+INNER JOIN lgproduct ON lgbrand.brand_id = lgproduct.brand_id group by lgbrand.brand_id order by lgbrand.brand_id desc;
+-- question 38
+select lgbrand.brand_id, brand_name, ROUND(avg(prod_price),2) as AVGPRICE from lgbrand 
+inner join lgproduct on lgbrand.brand_id=lgproduct.brand_id group by lgbrand.brand_id, lgbrand.brand_name order by brand_name;
+-- question 39
+SELECT 
+D.dept_num, MAX(E.emp_hiredate) AS 'MOSTRECENT'
+FROM 
+lgdepartment D INNER JOIN lgemployee E ON E.dept_num = D.dept_num
+GROUP BY D.dept_num
+ORDER BY D.dept_num;
+-- question 40
+SELECT 
+E.emp_num, E.emp_fname, E.emp_lname, MAX(S.sal_amount) AS 'LARGESTSALARY' FROM 
+lgemployee E INNER JOIN lgsalary_history S 
+ON S.emp_num = E.emp_num WHERE 
+E.dept_num = '200' GROUP BY E.emp_num, E.emp_fname, E.emp_lname ORDER BY LARGESTSALARY DESC
+-- question 41
+select lgc.cust_code, cust_lname, cust_fname, SUM(lgi.inv_total) as INVOICETOTAL from lgcustomer lgc , lginvoice lgi where lgc.cust_code=lgi.
+cust_code group by lgc.cust_lname, lgc.cust_fname, lgc.cust_code having sum(lgi.inv_total) >1500 order by INVOICETOTAL desc;
+-- question 42
+select lgdepartment.dept_num, dept_name, dept_phone, emp_lname, lgemployee.emp_num from lgdepartment inner join lgemployee on lgdepartment.
+emp_num=lgemployee.emp_num order by dept_name;
+-- question43
+SELECT 
+vendor.vend_id, vendor.vend_name, brand.brand_name, COUNT(product.prod_sku) AS NUM_PRODUCTS FROM 
+lgvendor vendor INNER 
+JOIN lgsupplies S ON vendor.vend_id = s.vend_id INNER JOIN lgproduct product ON S.prod_sku = product.prod_sku INNER JOIN lgbrand brand ON brand
+.brand_id = product.brand_id GROUP BY vendor.vend_id, vendor.vend_name, brand.brand_name ORDER BY vendor.vend_name, brand.brand_name;
+-- question 44
+select emp_num, emp_lname, emp_fname, sum(inv_total) as TOTALINVOICE from lgemployee inner join lginvoice on emp_num= lginvoice.employee_id 
+group by emp_num, emp_lname, emp_fname order by emp_fname, emp_lname;
+-- question 45
+SELECT 
+ROUND(AVG(prod_price),2) AS 'LARGEST AVERAGE' FROM 
+lgproduct GROUP BY brand_id HAVING 
+AVG(prod_price) =
+(SELECT 
+TOP 1 AVG(prod_price) from lgproduct GROUP BY brand_id ORDER BY AVG(prod_price) DESC);
+-- question 46
+SELECT 
+B.brand_id, B.brand_name, B.brand_type, ROUND(AVG(P.prod_price),2) AS 'AVGPRICE' FROM 
+lgbrand B INNER JOIN lgproduct P ON 
+B.brand_id = P.brand_id GROUP BY B.brand_id, B.brand_name, B.brand_type HAVING 
+AVG(P.prod_price) = (SELECT 
+TOP 1 AVG(P.prod_price
+) FROM lgbrand B INNER JOIN lgproduct P ON B.brand_id = P.brand_id GROUP BY B.brand_id, B.brand_name, B.brand_type ORDER BY AVG(prod_price) 
+DESC);
+-- question 47
+SELECT 
+M.emp_lname AS 'MANAGER LNAME', M.emp_fname AS 'MANAGER FNAME', dept.dept_name, dept.dept_phone, emp.emp_lname, emp.emp_fname, C.
+cust_lname, C.cust_fname, inv.inv_date, inv.inv_total
+FROM lgdepartment dept INNER JOIN lgemployee emp ON dept.dept_num = emp.dept_num
+ 
+INNER JOIN lgemployee M ON dept.emp_num = M.emp_num
+ 
+INNER JOIN lginvoice inv ON inv.employee_id = emp.emp_num
+ 
+INNER JOIN lgcustomer C ON C.cust_code = inv.cust_code WHERE 
+C.cust_lname = 'Hagan' AND inv.inv_date = '2015-05-18';
+ 
+-- question 48
+SELECT E.emp_num, E.emp_lname, E.emp_fname, S.sal_amount FROM lgemployee E INNER JOIN lgsalary_history S ON S.emp_num = E.emp_num WHERE 
+S.sal_end IS NULL AND E.dept_num = '300' ORDER BY S.sal_amount DESC;
+-- question 49
+SELECT emp.emp_num, emp.emp_lname, emp.emp_fname, sal.sal_amount FROM lgemployee emp INNER JOIN 
+lgsalary_history sal ON sal.emp_num = emp.emp_num WHERE sal_from = 
+(SELECT MIN(sal_from)FROM 
+lgemployee E INNER JOIN lgsalary_history sal_his ON sal_his.emp_num = E.emp_num)ORDER BY emp.emp_num;
+-- question 50
+SELECT line.inv_num, line.line_num, product.prod_sku, product.prod_descript, L2.line_num, product.brand_id FROM
+(LGLINE line inner join LGPRODUCT product ON line.PROD_SKU = product.PROD_SKU) inner join 
+(LGLINE L2 inner join LGPRODUCT P2 ON L2.PROD_SKU = P2.PROD_SKU) 
+ON line.INV_NUM = L2.INV_NUM WHERE 
+product.brand_id = P2.brand_id AND product.prod_category = 'SEALER' AND
+P2.prod_category = 'TOP COAT'ORDER BY line.inv_num ASC, line.line_num ASC, L2.line_num DESC;
+-- question 51
+SELECT 
+E.emp_num, E.emp_fname, E.emp_lname, E.emp_email, SUM(L.line_qty) AS 'TOTAL_UNITS'
+FROM 
+lgemployee E INNER JOIN lginvoice I ON E.emp_num = I.employee_id
+ 
+INNER JOIN lgline L ON L.inv_num = I.inv_num
+ 
+INNER JOIN lgproduct P ON P.prod_sku = L.prod_sku
+ 
+INNER JOIN lgbrand B ON P.brand_id = B.brand_id
+WHERE 
+B.brand_name = 'BINDER PRIME' 
+ 
+AND I.inv_date BETWEEN '11-01-15' AND '12-05-15'
+GROUP BY E.emp_num, E.emp_fname, E.emp_lname, E.emp_email
+HAVING SUM(L.line_qty) = (SELECT MAX(TOTAL_UNITS)
+ 
+FROM( SELECT E.emp_num, E.emp_fname, E.emp_lname, E.emp_email,SUM(L.line_qty) AS 
+'TOTAL_UNITS'
+ 
+FROM lgemployee E INNER JOIN lginvoice I ON E.emp_num = I.employee_id
+ 
+INNER JOIN lgline L ON L.inv_num = I.inv_num
+ 
+INNER JOIN lgproduct P ON P.prod_sku = L.prod_sku
+ 
+INNER JOIN lgbrand B ON P.brand_id = B.brand_id
+ 
+WHERE 
+B.brand_name = 'BINDER PRIME' 
+ 
+AND I.inv_date BETWEEN '11-01-15' AND '12-05-15'
+ 
+GROUP BY E.emp_num, E.emp_fname, E.emp_lname, E.emp_email) A)
+ORDER BY E.emp_lname 
+-- question 52
+SELECT DISTINCT lgcustomer.cust_code, cust_fname, cust_lname 
+FROM lgcustomer INNER JOIN lginvoice lgi ON lgi.cust_code = lgcustomer.cust_code 
+ 
+INNER JOIN lginvoice iv ON iv.cust_code = lgcustomer.cust_code 
+WHERE iv.employee_id = '83677' AND lgi.employee_id = '83649'
+-- question 53
+SELECT 
+C.cust_code, C.cust_fname, C.cust_lname, C.cust_street, C.cust_city, C.cust_state, C.cust_zip, I.inv_date, I.inv_total AS 
+"Largest Invoice"
+FROM 
+lgcustomer C INNER JOIN lginvoice I ON I.cust_code = C.cust_code
+WHERE 
+C.cust_state = 'AL'
+ 
+AND I.inv_total = (SELECT Max(inv_total)
+ 
+FROM lginvoice I2
+WHERE i2.cust_code = c.cust_code)
+SELECT 
+c.cust_code, cust_fname, cust_lname, cust_street, cust_city, cust_state, cust_zip, inv_date, inv_total AS "Largest Invoice"
+FROM 
+lgcustomer c join lginvoice i ON c.cust_code = i.cust_code
+WHERE 
+c.cust_state = 'AL' AND i.inv_total = (SELECT Max(inv_total) FROM lginvoice i2 WHERE i2.cust_code = c.cust_code)
+UNION
+SELECT 
+cust_code, cust_fname, cust_lname, cust_street, cust_city, cust_state, cust_zip, NULL, 0
+FROM 
+lgcustomer
+WHERE 
+cust_state = 'AL' AND cust_code NOT IN (SELECT cust_code FROM lginvoice)
+ORDER BY cust_lname, cust_fname;
